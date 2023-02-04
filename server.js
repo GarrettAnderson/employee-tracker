@@ -15,8 +15,6 @@ const db = mysql.createConnection(
     console.log(`Connected to the movies_db database.`)
   );
 
-  
-
 
 const whatToDoQuestion = [
 
@@ -47,7 +45,7 @@ inquirer.prompt(whatToDoQuestion)
         if (question === 'View All Departments' ) {
             console.log('View All Departments')
             // run SQL query 
-
+            showAllDeptartments()
         } else if (question === 'View All Roles') {
             console.log('View All Roles')
             // run SQL query 
@@ -77,3 +75,9 @@ inquirer.prompt(whatToDoQuestion)
     .catch(err => {
         console.log('error:', err)
     })
+
+const showAllDeptartments = () => {
+    db.query('SELECT * FROM department', (err, results) => {
+        console.table(results)
+    })
+}
