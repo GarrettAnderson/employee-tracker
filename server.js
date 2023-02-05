@@ -1,3 +1,4 @@
+const { Server } = require('http');
 const inquirer = require('inquirer')
 const mysql = require('mysql2')
 
@@ -29,7 +30,8 @@ const whatToDoQuestion = [
                 'Add A Department',
                 'Add A Role',
                 'Add An Employee',
-                'Update An Employee Role'
+                'Update An Employee Role',
+                'No Action'
             ]
         }
 ]
@@ -37,23 +39,21 @@ const whatToDoQuestion = [
 // initiate what to do question
 
 // create conditional to run an appropriate function with SQL query depending on choices in whatToDo prompt
-inquirer.prompt(whatToDoQuestion)
+const askUserPrompt = () => {
+    inquirer.prompt(whatToDoQuestion)
     .then(data => {
         // console.log(data.questions)
         const question = data.questions
         // if statement to run specific function depending on question choice
         if (question === 'View All Departments' ) {
             console.log('View All Departments')
-            // run SQL query 
             showAllDeptartments()
         } else if (question === 'View All Roles') {
             console.log('View All Roles')
-            // run SQL query 
-
+            showAllRoles()
         } else if (question === 'View All Employees') {
             console.log('View All Employees')
-            // run SQL query 
-
+            showAllEployees()
         } else if (question === 'Add A Department') {
             console.log('Add A Department')
             // run SQL query 
@@ -66,18 +66,48 @@ inquirer.prompt(whatToDoQuestion)
             console.log('Add AN Employee')
             // run SQL query 
     
-        } else  {
+        } else if (question === 'Update An Employee Roll') {
             console.log('Update An Employee Role')
-            // run SQL query 
+            // run SQL query
         
+        } else if (question === 'No Action') {
+            db.end()
         }
     })
     .catch(err => {
         console.log('error:', err)
     })
+}
 
 const showAllDeptartments = () => {
     db.query('SELECT * FROM department', (err, results) => {
         console.table(results)
+        // askUserPrompt()
+        db.close()
     })
 }
+
+const showAllRoles = () => {
+    db.query('SELECT * FROM job_role', (err, results) => {
+        console.table(results)
+        db.close()
+    })
+}
+
+const showAllEployees = () => {
+    db.query(`SELECT first_name,
+                     last_name,
+                     employee.id AS employee_id,
+                     job_role.title,
+                     job_role.salary AS salary,
+                     department.dept_name AS department
+                FROM employee
+                    JOIN job_role ON employee.role_id = job_role.id 
+                    LEFT JOIN department ON job_role.department_id = department.id
+        `, (err, results) => {
+        console.table(results)
+    })
+    db.close()
+}
+
+askUserPrompt()
