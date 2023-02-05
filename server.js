@@ -57,11 +57,11 @@ const askUserPrompt = () => {
         } else if (question === 'Add A Department') {
             console.log('Add A Department')
             // run SQL query 
-
+            addADepartment()
         } else if (question === 'Add A Role') {
             console.log('Add A Role')
             // run SQL query 
-
+            addARole()
         } else if (question === 'Add AN Employee') {
             console.log('Add AN Employee')
             // run SQL query 
@@ -110,4 +110,51 @@ const showAllEployees = () => {
     db.close()
 }
 
+const addADepartment = () => {
+    // prompt user to ask what department they want to add
+    inquirer.prompt({
+
+        type: 'input',
+        message: 'What is the name of the department you want to add?',
+        name: 'department'
+
+    })
+        .then((ans) => {
+            console.log(ans)
+            // ans is department name
+
+            // take the answer from prompt and write a prepared statment to query the database and add department name from prompt
+            db.query('INSERT INTO department (dept_name) VALUES (?)', ans.department, (err, result) => {
+                if (err) {
+                    throw `error: ${err.message}`
+                }
+                console.log(`Added ${ans.department} to departments.`)
+                showAllDeptartments()
+            })
+        })
+}
+
+const addARole = () => {
+    // ask questions to add a role = role name and salary
+
+    inquirer.prompt([
+        {
+            type: 'input',
+            message: 'What is the name of the role you want to add?',
+            name: 'role'
+        },
+        {
+            type: 'input',
+            message: 'What is the salary for this role?',
+            name: 'salary'
+        }
+    ])
+    .then(data => {
+        console.log(data)
+    })
+}
+
+
+
+// Initiate the first prompt
 askUserPrompt()
