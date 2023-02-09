@@ -253,17 +253,60 @@ const updateAnEmployeeRole = () => {
             throw err
         }
         console.table(result)
-        const employees = result.map(({first_name, last_name, id}) => (`${first_name} ${last_name}`))
-        
+        const employees = result.map(({id, first_name, last_name}) => ({name: first_name + " " + last_name, value: id}))
+        console.log(employees)
         inquirer.prompt([
             {
                 type: 'list',
                 message: 'What is the name of the employee you want to update?',
-                name: 'employeeName',
+                name: 'employee',
                 choices: employees
             }
         ]).then(data => {
-            console.log(data)
+            console.log(data.employee) // get the employee id from the data returned from inquirer
+            let params = [] // set up empty array to be passed into update query
+            params.push(data.employee)
+            // update the employee title role_id where id equals data.employee
+
+            db.query('SELECT * FROM job_role', (err, results) => {
+                if(err) {
+                    throw err;
+                }
+                console.log(results)
+                let roles = results.map(({id, title}) => ({title: title, value: id}))
+                console.log(roles)
+
+                inquirer.prompt([
+                   {
+                     type: 'list',
+                     name: 'role',
+                     message: 'What is the employee\'s new role id?',
+                     choices: roles
+                   }
+                ]).then(roleChoice => {
+                    console.log(roleChoice) // get the id of the role
+
+                    params.unshift(roleChoice.role)
+
+                    db.query('UPDATE employee SET role_id = ? WHERE id = ?', params, (err, result) => {
+                        console.log('employee role updated')
+                    })
+                    
+                    db.query(`SELECT 
+                    first_name, 
+                    last_name, 
+                    job_role.title, 
+                    job_role.salary, 
+                    job_role.id AS role_id,
+                    department.dept_name 
+                  FROM employee 
+                    JOIN job_role ON employee.role_id = job_role.id 
+                    LEFT JOIN department ON job_role.department_id = department.id`, (err,employeesExp) => {
+                    console.table(employeesExp)
+                    db.close()
+                    })
+                })
+            })
         })
     })
 }
